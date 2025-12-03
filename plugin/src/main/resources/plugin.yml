@@ -1,0 +1,19 @@
+name: ServerChannelChat
+version: ${version}
+main: com.mcgendai.chat.plugin.serverChannelChat.ServerChannelChatPaper
+api-version: '1.21'
+authors: [ Rei0925 ]
+website: https://chat.mcgendai.com
+permissions:
+  scc.ngword:
+    description: NG系全権限
+  scc.ngword.add:
+    description:
+  scc.ngword.del:
+    description:
+  scc.ngword.list:
+    description:
+  scc.ngword.search:
+    description:
+  scc.channel.create:
+    description:

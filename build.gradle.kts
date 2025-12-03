@@ -1,51 +1,75 @@
 plugins {
-    kotlin("jvm") version "2.3.0-RC"
-    id("com.gradleup.shadow") version "8.3.0"
-    id("xyz.jpenilla.run-paper") version "2.3.1"
-    id("org.jetbrains.dokka") version "2.0.0"
+    kotlin("jvm") version "2.2.21"
+    id("org.jetbrains.dokka") version "2.1.0"
+    id("org.jetbrains.dokka-javadoc") version "2.1.0"
+    kotlin("kapt") version "2.2.21" apply false
 }
 
 group = "com.mcgendai.chat"
-version = "0.0.2"
+version = "0.0.3"
 repositories {
     mavenCentral()
-    maven("https://repo.papermc.io/repository/maven-public/") {
-        name = "papermc-repo"
+    gradlePluginPortal()
+}
+
+subprojects {
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+
+    plugins.apply("org.jetbrains.dokka")
+    plugins.apply("org.jetbrains.dokka-javadoc")
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+
+        // Paper 用
+        maven("https://repo.papermc.io/repository/maven-public/")
+
+        // BungeeCord 用（両方必要）
+        maven("https://oss.sonatype.org/content/groups/public/")
+        maven("https://oss.sonatype.org/content/repositories/snapshots/")
+        maven("https://repo.aikar.co/content/groups/aikar/")
+
+        //Fabric 用
+        gradlePluginPortal()
+        maven("https://maven.fabricmc.net/")
+    }
+
+    dokka{
+        pluginsConfiguration.html {
+            customAssets.from(rootProject.file("logo.png"))
+            footerMessage.set("(c)2025 Rei0925. All Rights Reserved.")
+        }
+        dokkaSourceSets.configureEach {
+            externalDocumentationLinks.register("scc-docs") {
+                url("https://docs.mcgendai.com/")
+                packageListUrl("https://docs.mcgendai.com/0.0.3/Kdoc/package-list")
+            }
+        }
+    }
+}
+
+dokka {
+    dokkaPublications.html {
+        outputDirectory.set(rootDir.resolve("docs/"))
+    }
+    dokkaPublications.javadoc {
+        outputDirectory.set(rootDir.resolve("Javadocs/"))
+    }
+    pluginsConfiguration.html {
+        customAssets.from(rootProject.file("logo.png"))
+        footerMessage.set("(c)2025 Rei0925. All Rights Reserved.")
+    }
+    dokkaSourceSets.configureEach {
+        externalDocumentationLinks.register("scc-docs") {
+            url("https://docs.mcgendai.com/")
+            packageListUrl("https://docs.mcgendai.com/0.0.3/Kdoc/package-list")
+        }
     }
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("com.worksap.nlp:sudachi:0.7.5")
-    implementation("com.h2database:h2:2.2.224")
-    implementation("com.zaxxer:HikariCP:5.1.0")
-    implementation("org.jsoup:jsoup:1.7.3")
-}
-
-tasks {
-    runServer {
-        // Configure the Minecraft version for our task.
-        // This is the only required configuration besides applying the plugin.
-        // Your plugin's jar (or shadowJar if present) will be used automatically.
-        minecraftVersion("1.21")
-    }
-}
-
-val targetJavaVersion = 21
-kotlin {
-    jvmToolchain(targetJavaVersion)
-}
-
-tasks.build {
-    dependsOn("shadowJar")
-}
-
-tasks.processResources {
-    val props = mapOf("version" to version)
-    inputs.properties(props)
-    filteringCharset = "UTF-8"
-    filesMatching("plugin.yml") {
-        expand(props)
-    }
+    dokka(project(":common"))
+    dokka(project(":mod"))
+    dokka(project(":plugin"))
 }
